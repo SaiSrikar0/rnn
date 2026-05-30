@@ -147,11 +147,22 @@ def encode_review(text, word_index, maxlen=500, num_words=10000):
 
 def predict_probability(model, is_onnx, seq):
 	if is_onnx:
-		input_name = model.get_inputs()[0].name
-		try:
+		input_info = model.get_inputs()[0]
+		input_name = input_info.name
+		input_type = (input_info.type or "").lower()
+
+		if "float" in input_type:
+			out = model.run(None, {input_name: seq.astype("float32")})
+		elif "int64" in input_type:
 			out = model.run(None, {input_name: seq.astype("int64")})
-		except Exception:
+		elif "int32" in input_type:
 			out = model.run(None, {input_name: seq.astype("int32")})
+		else:
+			# Fallback for uncommon ONNX input dtypes.
+			try:
+				out = model.run(None, {input_name: seq.astype("int64")})
+			except Exception:
+				out = model.run(None, {input_name: seq.astype("float32")})
 		return float(np.asarray(out[0]).reshape(-1)[0])
 
 	pred = model.predict(seq)
