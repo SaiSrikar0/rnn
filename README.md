@@ -1,5 +1,7 @@
 # IMDB RNN Demo
 
+Deployed app : https://rnn-imdb.streamlit.app/
+
 Minimal demo showing training, conversion, and serving an IMDB sentiment RNN.
 
 **Files**
