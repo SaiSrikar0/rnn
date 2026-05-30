@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.venv_onnx/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+
+# Local artifacts and logs
+*.log
+imdb_word_index.json
+
+# Optional: keep large model binaries out of git by default
+# Uncomment if needed:
+# *.onnx
+# *.h5
+# *.keras

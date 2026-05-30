@@ -1,35 +1,74 @@
 # IMDB RNN Demo
 
-Minimal demo showing training, saving, and serving a Keras RNN model for IMDB sentiment.
+Minimal demo showing training, conversion, and serving an IMDB sentiment RNN.
 
 **Files**
-- [rnn_pet.ipynb](rnn_pet.ipynb): Notebook that trains the RNN, saves models (`saved_models/rnn_imdb`, `rnn_imdb.h5`) and a pickle `pets_cnn.pkl`.
-- [app.py](app.py): Streamlit front-end that loads the saved model and provides a text-based prediction UI.
-- [requirements.txt](requirements.txt): Python dependencies.
-- `imdb_rnn_model.keras` or `imdb_rnn_models.keras`: example Keras model file name the app will try to load.
+- [rnn_pet.ipynb](rnn_pet.ipynb): Notebook that trains the RNN and saves model artifacts.
+- [app.py](app.py): Streamlit front-end that prefers ONNX (`onnxruntime`) and can fallback to Keras formats locally.
+- [requirements.txt](requirements.txt): Deployment dependencies (TensorFlow-free).
 
 Quickstart
 1. (Optional) Train and save the model from the notebook:
-   - Open and run all cells in [rnn_pet.ipynb](rnn_pet.ipynb). The notebook saves the model to `saved_models/rnn_imdb` and `rnn_imdb.h5` and writes `pets_cnn.pkl`.
+   - Open and run all cells in [rnn_pet.ipynb](rnn_pet.ipynb).
 
-2. Install dependencies:
+2. Convert to ONNX locally (recommended for deployment):
+```bash
+pip install tensorflow==2.20.0 tf2onnx
+streamlit run app.py
+```
+
+In the app sidebar, open **Local conversion: Keras -> ONNX** and export:
+- Input: `imdb_rnn_model.keras`
+- Output: `imdb_rnn_model.onnx`
+
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Run the Streamlit app (from this folder):
+4. Run the Streamlit app (from this folder):
 ```bash
 streamlit run app.py
 ```
 Open `http://localhost:8501` in your browser.
 
 Notes
-- The app prefers a `.keras` file named `imdb_rnn_models.keras` or `imdb_rnn_model.keras`. If present, it will load that first. Otherwise it falls back to `pets_cnn.pkl`, `rnn_imdb.h5`, or `saved_models/rnn_imdb`.
+- The app prefers ONNX files: `imdb_rnn_model.onnx` or `imdb_rnn_models.onnx`.
+- Keras files (`.keras`, `.h5`, SavedModel, pickle) are local fallback options when TensorFlow is installed.
 - By default advanced debug output is hidden. Enable it in the Streamlit sidebar by toggling "Show advanced debug".
 - Short single-word inputs (e.g. “awesome”) may be ambiguous; use longer phrases for best results.
 
 Troubleshooting
-- If the app reports no model found, ensure one of the model files listed above exists in the same folder as `app.py`.
+- If the app reports no model found, ensure `imdb_rnn_model.onnx` is in the same folder as `app.py`.
 - If you see preprocessing mismatches, enable advanced debug to inspect token mapping and run the sanity checks.
 
-If you want, I can add a Dockerfile or export the model to ONNX next.
+## Deployment (Streamlit Cloud)
+
+Use ONNX for deployment because Streamlit Cloud Python runtime may not have a compatible TensorFlow wheel.
+
+1. Convert locally (where TensorFlow + tf2onnx are installed):
+```bash
+python -m venv .venv_onnx
+.venv_onnx\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install tensorflow==2.20.0 tf2onnx
+streamlit run app.py
+```
+
+Then use the sidebar panel **Local conversion: Keras -> ONNX**.
+
+2. Commit and push:
+```bash
+git add .
+git commit -m "Deploy-ready ONNX Streamlit app"
+git push -u origin main
+```
+
+3. Streamlit Cloud settings:
+- Repository: `SaiSrikar0/rnn`
+- Branch: `main`
+- Main file path: `app.py`
+
+4. Optional in-app conversion:
+- The sidebar in `app.py` includes "Local conversion: Keras -> ONNX".
+- This works only on local environments with TensorFlow and tf2onnx installed.
